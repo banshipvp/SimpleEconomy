@@ -1,0 +1,14 @@
+# SimpleEconomy Configuration
+
+# XP Bottle Settings
+xp-bottle:
+  # Rank-based exhaustion times in minutes
+  # After withdrawing XP, player cannot withdraw again for this duration
+  rank-exhaustion:
+    owner: 0      # No exhaustion
+    admin: 0      # No exhaustion
+    mod: 1        # 1 minute
+    legend: 2     # 2 minutes
+    elite: 3      # 3 minutes
+    vip: 5        # 5 minutes
+    default: 10   # 10 minutes (default for no rank)

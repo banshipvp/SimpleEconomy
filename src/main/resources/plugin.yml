@@ -1,0 +1,17 @@
+name: SimpleEconomy
+version: 1.0
+api-version: '1.13'
+main: local.simpleeconomy.SimpleEconomyPlugin
+description: XP bottles and economy features
+authors: [Dev]
+depend: [LuckPerms]
+softdepend: [Vault]
+
+commands:
+  xpbottle:
+    description: Withdraw XP into a bottle
+    usage: /xpbottle <amount>
+    aliases: [xpb]
+  banknote:
+    description: Create or give redeemable bank notes
+    usage: /banknote <amount> OR /banknote give <player> <amount>
