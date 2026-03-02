@@ -15,3 +15,13 @@ commands:
   banknote:
     description: Create or give redeemable bank notes
     usage: /banknote <amount> OR /banknote give <player> <amount>
+  balance:
+    description: Check your balance or another player's
+    usage: /balance [player]
+    aliases: [bal, money]
+    default: true
+
+permissions:
+  simpleeconomy.balance.others:
+    description: View other players' balances
+    default: true

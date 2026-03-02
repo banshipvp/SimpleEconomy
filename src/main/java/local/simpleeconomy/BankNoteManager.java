@@ -1,6 +1,5 @@
 package local.simpleeconomy;
 
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -10,6 +9,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +17,11 @@ import java.util.List;
 public class BankNoteManager {
 
     private final JavaPlugin plugin;
-    private final Economy economy;
+    private final Object economy;
     private final NamespacedKey amountKey;
     private final DecimalFormat moneyFormat = new DecimalFormat("#,###.##");
 
-    public BankNoteManager(JavaPlugin plugin, Economy economy) {
+    public BankNoteManager(JavaPlugin plugin, Object economy) {
         this.plugin = plugin;
         this.economy = economy;
         this.amountKey = new NamespacedKey(plugin, "banknote_amount");
@@ -60,8 +60,27 @@ public class BankNoteManager {
         double amount = getAmount(item);
         if (amount <= 0) return false;
 
-        economy.depositPlayer(player, amount);
+        if (!depositPlayer(player, amount)) return false;
         player.sendMessage("§aRedeemed bank note for §e$" + moneyFormat.format(amount));
         return true;
+    }
+
+    private boolean depositPlayer(Player player, double amount) {
+        if (economy == null) return false;
+        try {
+            Method method = economy.getClass().getMethod("depositPlayer", Player.class, double.class);
+            method.invoke(economy, player, amount);
+            return true;
+        } catch (ReflectiveOperationException ignored) {
+        }
+
+        try {
+            Class<?> offlinePlayerClass = Class.forName("org.bukkit.OfflinePlayer");
+            Method method = economy.getClass().getMethod("depositPlayer", offlinePlayerClass, double.class);
+            method.invoke(economy, player, amount);
+            return true;
+        } catch (ReflectiveOperationException ignored) {
+            return false;
+        }
     }
 }

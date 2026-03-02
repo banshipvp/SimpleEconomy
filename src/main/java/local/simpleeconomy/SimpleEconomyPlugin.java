@@ -37,6 +37,11 @@ public class SimpleEconomyPlugin extends JavaPlugin {
             getCommand("banknote").setExecutor(new BankNoteCommand(bankNoteManager));
             Bukkit.getPluginManager().registerEvents(new BankNoteListener(bankNoteManager), this);
             getLogger().info("Bank notes enabled.");
+
+            // /bal [player] command
+            BalanceCommand balCmd = new BalanceCommand(economy);
+            getCommand("balance").setExecutor(balCmd);
+            getCommand("balance").setTabCompleter(balCmd);
         } else {
             getLogger().warning("Vault economy not found. Bank notes disabled.");
         }
