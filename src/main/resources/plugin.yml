@@ -20,6 +20,12 @@ commands:
     usage: /balance [player]
     aliases: [bal, money]
     default: true
+  coinflip:
+    description: 50/50 coin flip betting
+    usage: /coinflip [amount|cancel]
+  cf:
+    description: 50/50 coin flip betting (shorthand)
+    usage: /cf [amount|cancel]
 
 permissions:
   simpleeconomy.balance.others:

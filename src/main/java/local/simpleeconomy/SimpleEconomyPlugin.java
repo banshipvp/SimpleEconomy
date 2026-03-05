@@ -14,6 +14,7 @@ public class SimpleEconomyPlugin extends JavaPlugin {
 
     private XPBottleManager xpBottleManager;
     private BankNoteManager bankNoteManager;
+    private CoinFlipManager coinFlipManager;
     private LuckPerms luckPerms;
     private Economy economy;
 
@@ -42,6 +43,19 @@ public class SimpleEconomyPlugin extends JavaPlugin {
             BalanceCommand balCmd = new BalanceCommand(economy);
             getCommand("balance").setExecutor(balCmd);
             getCommand("balance").setTabCompleter(balCmd);
+
+            // Coin flip
+            coinFlipManager = new CoinFlipManager(economy);
+            CoinFlipGUI coinFlipGUI = new CoinFlipGUI(coinFlipManager, this);
+            CoinFlipCommand coinFlipCmd = new CoinFlipCommand(coinFlipManager, coinFlipGUI);
+            getCommand("coinflip").setExecutor(coinFlipCmd);
+            getCommand("coinflip").setTabCompleter(coinFlipCmd);
+            getCommand("cf").setExecutor(coinFlipCmd);
+            getCommand("cf").setTabCompleter(coinFlipCmd);
+            Bukkit.getPluginManager().registerEvents(coinFlipGUI, this);
+            // Expire old flips every 30 seconds
+            Bukkit.getScheduler().runTaskTimer(this, () -> coinFlipManager.expireOldFlips(), 600L, 600L);
+            getLogger().info("Coin flip system enabled.");
         } else {
             getLogger().warning("Vault economy not found. Bank notes disabled.");
         }
