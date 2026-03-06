@@ -17,6 +17,8 @@ dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT'
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'com.github.MilkBowl:VaultAPI:1.7.1'
+    // SimpleFactions: cross-plugin challenge hook for coinflip wins
+    compileOnly files('../SimpleFactions/build/libs/SimpleFactions-1.0.0.jar')
 }
 
 java {

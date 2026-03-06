@@ -5,7 +5,7 @@ main: local.simpleeconomy.SimpleEconomyPlugin
 description: XP bottles and economy features
 authors: [Dev]
 depend: [LuckPerms]
-softdepend: [Vault]
+softdepend: [Vault, SimpleFactions]
 
 commands:
   xpbottle:

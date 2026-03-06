@@ -135,32 +135,82 @@ public class CoinFlipManager {
         boolean creatorWins = ThreadLocalRandom.current().nextBoolean();
         double pot = flip.amount * 2;
 
+        // ── Rank-based tax: 25% (no rank) → 1% (top rank) ───────────────────
+        Player onlineWinner;
+        UUID   winnerUuid;
         String winnerName, loserName;
         if (creatorWins) {
-            Player creator = Bukkit.getPlayer(flip.creatorUuid);
-            if (creator != null) economy.depositPlayer(creator, pot);
-            else economy.depositPlayer(Bukkit.getOfflinePlayer(flip.creatorUuid), pot);
-            winnerName = flip.creatorName;
-            loserName = joiner.getName();
+            onlineWinner = Bukkit.getPlayer(flip.creatorUuid);
+            winnerUuid   = flip.creatorUuid;
+            winnerName   = flip.creatorName;
+            loserName    = joiner.getName();
         } else {
-            economy.depositPlayer(joiner, pot);
-            winnerName = joiner.getName();
-            loserName = flip.creatorName;
+            onlineWinner = joiner;
+            winnerUuid   = joiner.getUniqueId();
+            winnerName   = joiner.getName();
+            loserName    = flip.creatorName;
+        }
+        double taxRate   = onlineWinner != null ? getCoinFlipTax(onlineWinner) : 0.25;
+        double taxAmount = pot * taxRate;
+        double payout    = pot - taxAmount;
+        int    taxPct    = (int) Math.round(taxRate * 100);
+
+        if (creatorWins) {
+            if (onlineWinner != null) economy.depositPlayer(onlineWinner, payout);
+            else economy.depositPlayer(Bukkit.getOfflinePlayer(flip.creatorUuid), payout);
+        } else {
+            economy.depositPlayer(joiner, payout);
         }
 
-        String result = String.format(
-                "§6✦ §eCoin Flip Result§8: §f%s §7vs §f%s §8| §6$%s pot\n" +
-                "§a§l🪙 %s §r§awon! §7(%s chose §e%s§7, %s chose §e%s§7, flipped: §e%s§7)",
-                flip.creatorName, joiner.getName(), fmt(pot),
-                winnerName,
-                flip.creatorName, flip.creatorSide.name(),
-                joiner.getName(), flip.joinerSide().name(),
-                creatorWins ? flip.creatorSide.name() : flip.joinerSide().name()
-        );
+        // Cross-plugin: track coinflip win in the daily challenge
+        callSFCoinflipWin(winnerUuid, winnerName, (long) payout);
 
-        Bukkit.broadcastMessage("§6§l[CoinFlip] §r" + winnerName + " §awon §6$" + fmt(pot)
-                + " §aagainst " + loserName + "!");
+        String result = String.format(
+                "§6❖ §eCoin Flip Result§8: §f%s §7vs §f%s §8| §6$%s pot\n"
+                + "§a§l🪙 %s §r§awon §6$%s §8(§c-%d%% tax§8) §7— %s chose §e%s§7, %s chose §e%s§7",
+                flip.creatorName, joiner.getName(), fmt(pot),
+                winnerName, fmt(payout), taxPct,
+                flip.creatorName, flip.creatorSide.name(),
+                joiner.getName(), flip.joinerSide().name());
+
+        Bukkit.broadcastMessage("§6§l[CoinFlip] §r" + winnerName + " §awon §6$" + fmt(payout)
+                + " §7(§c-" + taxPct + "% §7tax) §aagainst " + loserName + "!");
         return result;
+    }
+
+    // ── Tax & cross-plugin hooks ──────────────────────────────────────────────
+
+    /**
+     * Returns the coinflip tax rate for the given player based on their LuckPerms
+     * group weight. Weight 0 (no rank) = 25%, weight ≥ 100 (top rank) = 1%.
+     */
+    private double getCoinFlipTax(Player player) {
+        try {
+            var lp   = net.luckperms.api.LuckPermsProvider.get();
+            var user = lp.getUserManager().getUser(player.getUniqueId());
+            if (user == null) return 0.25;
+            var group  = lp.getGroupManager().getGroup(user.getPrimaryGroup());
+            int weight = (group != null) ? group.getWeight().orElse(0) : 0;
+            // weight 0 → 25%, weight 100 → 1%
+            double tax = 0.25 - (Math.min(weight, 100) * 0.24 / 100.0);
+            return Math.max(0.01, tax);
+        } catch (Exception e) {
+            return 0.25; // LuckPerms unavailable: apply maximum tax
+        }
+    }
+
+    /**
+     * Notifies the SimpleFactions daily challenge system that a coinflip was won.
+     * No-op when SimpleFactions is not loaded.
+     */
+    private void callSFCoinflipWin(UUID winnerUuid, String winnerName, long amount) {
+        org.bukkit.plugin.Plugin sfPlugin = Bukkit.getPluginManager().getPlugin("SimpleFactions");
+        if (!(sfPlugin instanceof local.simplefactions.SimpleFactionsPlugin sfp)) return;
+        local.simplefactions.ChallengeManager cm = sfp.getChallengeManager();
+        if (cm != null) {
+            cm.increment(winnerUuid, winnerName,
+                    local.simplefactions.ChallengeManager.TrackerType.COINFLIP_WIN, amount);
+        }
     }
 
     /** Cancel / expire a flip, returning the creator's money. */
