@@ -63,6 +63,10 @@ public class BalanceCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+        if (!sender.hasPermission("simpleeconomy.balance.others")) {
+            return List.of();
+        }
+
         if (args.length == 1) {
             String partial = args[0].toLowerCase();
             return Bukkit.getOnlinePlayers().stream()

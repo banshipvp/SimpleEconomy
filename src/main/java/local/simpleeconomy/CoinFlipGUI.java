@@ -172,7 +172,17 @@ public class CoinFlipGUI implements Listener {
             CoinFlipManager.CoinFlip flip = manager.getFlip(flipId);
             if (flip == null) { openList(player); return; } // stale, refresh
             if (flip.creatorUuid.equals(player.getUniqueId())) {
-                player.sendMessage("§cYou can't join your own flip.");
+                if (e.isRightClick()) {
+                    boolean cancelled = manager.cancelFlip(player.getUniqueId());
+                    if (cancelled) {
+                        player.sendMessage("§aCoin flip cancelled. §7Your money has been refunded.");
+                    } else {
+                        player.sendMessage("§cThat flip is no longer active.");
+                    }
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> openList(player), 1L);
+                    return;
+                }
+                player.sendMessage("§cYou can't join your own flip. §7Right-click to cancel it.");
                 return;
             }
             player.closeInventory();

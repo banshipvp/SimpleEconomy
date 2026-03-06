@@ -15,6 +15,7 @@ commands:
   banknote:
     description: Create or give redeemable bank notes
     usage: /banknote <amount> OR /banknote give <player> <amount>
+    permission: simpleeconomy.admin
   balance:
     description: Check your balance or another player's
     usage: /balance [player]
@@ -28,6 +29,9 @@ commands:
     usage: /cf [amount|cancel]
 
 permissions:
+  simpleeconomy.admin:
+    description: Admin access for economy management commands
+    default: op
   simpleeconomy.balance.others:
     description: View other players' balances
     default: true

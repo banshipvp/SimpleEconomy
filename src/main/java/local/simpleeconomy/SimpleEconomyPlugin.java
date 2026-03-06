@@ -36,6 +36,7 @@ public class SimpleEconomyPlugin extends JavaPlugin {
         if (setupEconomy()) {
             bankNoteManager = new BankNoteManager(this, economy);
             getCommand("banknote").setExecutor(new BankNoteCommand(bankNoteManager));
+            getCommand("banknote").setTabCompleter(new BankNoteTabCompleter());
             Bukkit.getPluginManager().registerEvents(new BankNoteListener(bankNoteManager), this);
             getLogger().info("Bank notes enabled.");
 
