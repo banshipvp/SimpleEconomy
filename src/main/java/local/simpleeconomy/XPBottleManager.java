@@ -348,7 +348,7 @@ public class XPBottleManager {
             if (cleanName.contains(" - ") && cleanName.contains(" XP")) {
                 int startIdx = cleanName.indexOf(" - ") + 3;
                 int endIdx = cleanName.indexOf(" XP");
-                String numStr = cleanName.substring(startIdx, endIdx).trim();
+                String numStr = cleanName.substring(startIdx, endIdx).trim().replace(",", "");
                 System.out.println("[SimpleEconomy] extractXPFromBottle: Parsed number string: " + numStr);
                 int amount = Integer.parseInt(numStr);
                 System.out.println("[SimpleEconomy] extractXPFromBottle: Parsed amount: " + amount);

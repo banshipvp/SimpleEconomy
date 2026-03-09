@@ -16,6 +16,7 @@ import java.util.List;
 
 public class BankNoteManager {
 
+    @SuppressWarnings("unused")
     private final JavaPlugin plugin;
     private final Object economy;
     private final NamespacedKey amountKey;

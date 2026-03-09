@@ -204,12 +204,21 @@ public class CoinFlipManager {
      * No-op when SimpleFactions is not loaded.
      */
     private void callSFCoinflipWin(UUID winnerUuid, String winnerName, long amount) {
-        org.bukkit.plugin.Plugin sfPlugin = Bukkit.getPluginManager().getPlugin("SimpleFactions");
-        if (!(sfPlugin instanceof local.simplefactions.SimpleFactionsPlugin sfp)) return;
-        local.simplefactions.ChallengeManager cm = sfp.getChallengeManager();
-        if (cm != null) {
-            cm.increment(winnerUuid, winnerName,
-                    local.simplefactions.ChallengeManager.TrackerType.COINFLIP_WIN, amount);
+        try {
+            org.bukkit.plugin.Plugin sfPlugin = Bukkit.getPluginManager().getPlugin("SimpleFactions");
+            if (sfPlugin == null) return;
+            
+            // Use reflection to avoid direct dependency on SimpleFactions
+            var getChallengeManager = sfPlugin.getClass().getMethod("getChallengeManager");
+            Object cm = getChallengeManager.invoke(sfPlugin);
+            if (cm != null) {
+                var increment = cm.getClass().getMethod("increment", UUID.class, String.class, Enum.class, long.class);
+                var trackerType = cm.getClass().getEnclosingClass().getField("TrackerType").get(null);
+                var coinflipWin = trackerType.getClass().getField("COINFLIP_WIN").get(trackerType);
+                increment.invoke(cm, winnerUuid, winnerName, coinflipWin, amount);
+            }
+        } catch (Exception e) {
+            // SimpleFactions not available or method not found; silently continue
         }
     }
 
