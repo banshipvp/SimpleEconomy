@@ -79,6 +79,10 @@ public class SimpleEconomyPlugin extends JavaPlugin {
         return xpBottleManager;
     }
 
+    public BankNoteManager getBankNoteManager() {
+        return bankNoteManager;
+    }
+
     public LuckPerms getLuckPerms() {
         return luckPerms;
     }
